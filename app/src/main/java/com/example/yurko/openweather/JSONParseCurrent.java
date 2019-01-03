@@ -34,6 +34,20 @@ public class JSONParseCurrent extends JSONParse{
         return round(result,0);
     }
 
+    public int getClouds() throws JSONException{
+        return mJsonObj.getJSONObject("clouds").getInt("all");
+    }
+
+    public double getWindSpeed() throws JSONException{
+        double result = mJsonObj.getJSONObject("wind").getDouble("speed");
+        return round(result,1);
+    }
+
+    public double getWindDireection() throws JSONException{
+        double result = mJsonObj.getJSONObject("wind").getDouble("deg");
+        return round(result,1);
+    }
+
     public String getCityName() throws  JSONException{
         return mJsonObj.getString("name");
     }
@@ -41,6 +55,16 @@ public class JSONParseCurrent extends JSONParse{
     public Date getDate() throws JSONException{
         return JSONParse.convertUnix(mJsonObj.getLong("dt"));
     }
+
+    public long getSunRiseTime() throws JSONException{
+        return mJsonObj.getJSONObject("sys").getLong("sunrise");
+
+    }
+
+    public long getSunSetTime() throws JSONException {
+        return mJsonObj.getJSONObject("sys").getLong("sunset");
+    }
+
 
     public String getDesc() throws JSONException{
         JSONArray array = mJsonObj.getJSONArray("weather");

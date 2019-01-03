@@ -20,7 +20,7 @@ public class JSONParse {
     }
 
     public static Date convertUnix(long timeStamp){
-        Date time =new Date(timeStamp*1000);
+        Date time = new Date(timeStamp*1000);
         return time;
     }
 

@@ -1,26 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.yurko.openweather" >
+    package="com.example.yurko.openweather">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
-
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
-
-        <activity android:name=".MainActivity">
-
+        android:theme="@style/AppTheme">
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyCIHLLp6fuU79d7h35t3FXN5IWgI9CFkp4"/>
+        <activity android:name=".MainActivity"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".Locations"
+            android:label="@string/title_activity_locations"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppThemeLocations">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.yurko.openweather.MainActivity" />
+        </activity>
+        <activity android:name=".SearchLocation"
+            android:label="@string/title_activity_searchlocations"
+            android:parentActivityName=".Locations"
+            android:theme="@style/AppThemeLocations">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.yurko.openweather.Locations" />
+
         </activity>
     </application>
 
