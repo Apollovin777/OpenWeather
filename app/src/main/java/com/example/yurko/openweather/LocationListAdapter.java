@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TwoLineListItem;
 
@@ -41,23 +42,41 @@ public class LocationListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        TwoLineListItem twoLineListItem;
 
-        if (convertView == null) {
-            LayoutInflater inflater = (LayoutInflater) context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            twoLineListItem = (TwoLineListItem) inflater.inflate(
-                    android.R.layout.simple_list_item_2, null);
-        } else {
-            twoLineListItem = (TwoLineListItem) convertView;
+        LayoutInflater inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        //View rowView = inflater.inflate(android.R.layout.simple_list_item_2, parent, false);
+        View rowView = inflater.inflate(R.layout.locations_listview_item, parent, false);
+
+        WeatherLocation location = mLocations.get(position);
+
+        TextView cityName = rowView.findViewById(R.id.cityNameId);
+        TextView countryName = rowView.findViewById(R.id.countryNameId);
+        ImageView imageView = rowView.findViewById(R.id.currentLocationId);
+
+        cityName.setText(location.cityName);
+        countryName.setText(location.country);
+
+        if(location.currentLocation == 1){
+            imageView.setVisibility(View.VISIBLE);
         }
 
-        TextView text1 = twoLineListItem.getText1();
-        TextView text2 = twoLineListItem.getText2();
+        if(location.recordType == 1){
+            String latitude = String.valueOf(round(location.latitude,5));
+            String longitude = String.valueOf(round(location.longitude,5));
+            countryName.setText(String.valueOf(latitude + ", " + longitude));
+        }
 
-        text1.setText(mLocations.get(position).cityName);
-        text2.setText(mLocations.get(position).country);
 
-        return twoLineListItem;
+        return rowView;
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 }

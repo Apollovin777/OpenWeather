@@ -14,7 +14,7 @@ import java.net.URL;
 public class JRequest {
     private final String LOG_TAG = "JRequest";
 
-    private final String APP_ID = "f0fd052a5dd68c962d6cc9aa80735ed4";
+    private final String APP_ID = BuildConfig.OpenW_key;
 
     private final String urlByCityCurrent = "http://api.openweathermap.org/data/2.5/weather";
     private final String urlByCityForecast = "http://api.openweathermap.org/data/2.5/forecast";
@@ -26,15 +26,15 @@ public class JRequest {
 
     private String mCityName;
     private boolean mForecast;
-    private float mLatitude;
-    private float mLongitude;
+    private double mLatitude;
+    private double mLongitude;
     private String mResult;
 
     public String getResult() {
         return mResult;
     }
 
-    public JRequest(boolean forecast, float latitude, float longitude) {
+    public JRequest(boolean forecast, double latitude, double longitude) {
         mForecast = forecast;
         mLatitude = latitude;
         mLongitude = longitude;
@@ -72,9 +72,9 @@ public class JRequest {
     private URL buildByCoordURL() {
         Uri baseUri;
         if (mForecast) {
-            baseUri = Uri.parse(urlByCoordCurrent);
-        } else
             baseUri = Uri.parse(urlByCoordForecast);
+        } else
+            baseUri = Uri.parse(urlByCoordCurrent);
 
         Uri.Builder uriBuilder = baseUri.buildUpon();
         uriBuilder.appendQueryParameter(latParam, String.valueOf(mLatitude));

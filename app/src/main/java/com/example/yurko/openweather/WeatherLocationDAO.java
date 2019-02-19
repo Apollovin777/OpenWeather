@@ -4,26 +4,46 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Transaction;
+import android.arch.persistence.room.Update;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Dao
-public interface WeatherLocationDAO {
+public abstract class WeatherLocationDAO {
     @Insert
-    void insert(WeatherLocation location);
+    abstract long insert(WeatherLocation location);
 
-    // Удаление Person из бд
     @Delete
-    void delete(WeatherLocation person);
+    abstract void delete(WeatherLocation person);
 
-    // Получение всех Person из бд
+    @Query("SELECT * FROM weatherlocation WHERE recordType = 1")
+    abstract List<WeatherLocation> getAutoLocation();
+
     @Query("SELECT * FROM weatherlocation WHERE currentLocation = 1")
-    WeatherLocation getCurrentLocation();
+    abstract WeatherLocation getCurrentLocation();
 
     @Query("SELECT * FROM weatherlocation WHERE recordType != 0")
-    List<WeatherLocation> getall();
+    abstract List<WeatherLocation> getall();
+
+    @Query("SELECT * FROM weatherlocation WHERE recordType = 0")
+    abstract List<WeatherLocation> getLastHope();
 
     @Query("SELECT * FROM weatherlocation")
-    List<WeatherLocation> checkCount();
+    abstract List<WeatherLocation> checkCount();
+
+    @Query("UPDATE weatherlocation set currentLocation = 0")
+    abstract void updateSetAllNonDefault();
+
+    @Query("UPDATE weatherlocation set currentLocation = 1 where id = :id")
+    abstract void setCurrent(long id);
+
+    @Transaction
+    void updateCurrentLocation(long id) {
+        updateSetAllNonDefault();
+        setCurrent(id);
+    }
+
+
 }

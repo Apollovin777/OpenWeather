@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Locations">
+    tools:context=".LocationsActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -30,7 +30,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="200dp"
-        android:src="@android:drawable/ic_menu_search"
+        android:src="@drawable/ic_search"
         android:tint="@color/colorWhite"
         android:visibility="invisible" />
 

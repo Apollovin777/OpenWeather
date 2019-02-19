@@ -58,13 +58,21 @@ public class JSONParseCurrent extends JSONParse{
 
     public long getSunRiseTime() throws JSONException{
         return mJsonObj.getJSONObject("sys").getLong("sunrise");
-
     }
 
     public long getSunSetTime() throws JSONException {
         return mJsonObj.getJSONObject("sys").getLong("sunset");
     }
 
+    public String getCountryName() throws JSONException{
+        return mJsonObj.getJSONObject("sys").getString("country");
+    }
+
+    public String getDescriptionID() throws JSONException{
+        JSONArray array = mJsonObj.getJSONArray("weather");
+        String id = array.getJSONObject(0).getString("id");
+        return id;
+    }
 
     public String getDesc() throws JSONException{
         JSONArray array = mJsonObj.getJSONArray("weather");

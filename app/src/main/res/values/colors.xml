@@ -8,6 +8,7 @@
     <color name="colorGrey">#dfdfdf</color>
     <color name="colorDarkGrey">#818181</color>
     <color name="colorTransparent">#00000000</color>
+    <color name="colorBlack">#000</color>
 
 
 </resources>

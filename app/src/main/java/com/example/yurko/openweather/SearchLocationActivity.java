@@ -18,7 +18,9 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchLocation extends AppCompatActivity {
+public class SearchLocationActivity extends AppCompatActivity {
+
+    private AppDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,50 +35,40 @@ public class SearchLocation extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        PlaceAutocompleteFragment places= (PlaceAutocompleteFragment)
+        PlaceAutocompleteFragment places = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
         places.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
 
-                Toast.makeText(getApplicationContext(),place.getName(),Toast.LENGTH_SHORT).show();
-
-                AppDatabase db = App.getInstance().getDatabase();
-                final WeatherLocationDAO weatherLocationDAO = db.WeatherLocationDAO();
-                LatLng latLng =  place.getLatLng();
+                Toast.makeText(getApplicationContext(), place.getName(), Toast.LENGTH_SHORT).show();
+                mDb = AppDatabase.getInstance(getApplicationContext());
+                LatLng latLng = place.getLatLng();
                 final WeatherLocation weatherLocation = new WeatherLocation(
-                  "test",
+                        "test",
                         place.getName().toString(),
-                        place.getAddress().toString().substring(place.getAddress().toString().lastIndexOf(',')+1),
+                        place.getAddress().toString().substring(place.getAddress().toString().lastIndexOf(',') + 1),
                         latLng.latitude,
                         latLng.longitude,
                         2,
                         1
                 );
-                new AsyncTask<Void,Void,Void >(){
-                    ArrayList<WeatherLocation> arrayList;
+                AppExecutors.getInstance().diskIO().execute(new Runnable() {
                     @Override
-                    protected Void doInBackground(Void... voids) {
-                        weatherLocationDAO.insert(weatherLocation);
-                        return null;
+                    public void run() {
+                        long id = mDb.WeatherLocationDAO().insert(weatherLocation);
+                        mDb.WeatherLocationDAO().updateCurrentLocation(id);
                     }
+                });
 
-                    @Override
-                    protected void onPostExecute(Void aVoid) {
-                        Intent intent = new Intent();
-                        setResult(RESULT_OK,intent);
-                        finish();
-                    }
-                }.execute();
-
-
+                Intent intent = new Intent();
+                setResult(RESULT_OK, intent);
+                finish();
             }
 
             @Override
             public void onError(Status status) {
-
-                Toast.makeText(getApplicationContext(),status.toString(),Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(getApplicationContext(), status.toString(), Toast.LENGTH_SHORT).show();
             }
         });
         AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
