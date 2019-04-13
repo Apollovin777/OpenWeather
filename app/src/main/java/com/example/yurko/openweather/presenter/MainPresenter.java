@@ -49,12 +49,15 @@ public class MainPresenter implements CurrentConditionLoadListener, Presenter {
 
     public void viewIsReady() {
         updateCurrentConditionData();
-        requestPermissions();
+
         if (ActivityCompat.checkSelfPermission(MyApplication.getAppContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(MyApplication.getAppContext(),
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             renewAutoLocationPlace();
+        }
+        else{
+            requestPermissions();
         }
         loadForecast();
     }
@@ -149,20 +152,15 @@ public class MainPresenter implements CurrentConditionLoadListener, Presenter {
     }
 
     public void renewAutoLocationPlace() {
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                WeatherLocation autoLocation = mDb.WeatherLocationDAO().getAutoLocation();
-                if (autoLocation != null) {
-                    mDb.WeatherLocationDAO().delete(autoLocation);
-                    Log.i(LOG_TAG, "deleted auto");
-                }
+        Log.i(LOG_TAG,"Start renewAutoLocationPlace");
+
                 addAutoLocation();
-            }
-        });
+
     }
 
     private void addAutoLocation() {
+        Log.i(LOG_TAG,"Start addAutoLocation");
+
         FusedLocationProviderClient mFusedLocationClient;
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(mView.getViewActivity());
 
@@ -180,6 +178,11 @@ public class MainPresenter implements CurrentConditionLoadListener, Presenter {
                                 AppExecutors.getInstance().diskIO().execute(new Runnable() {
                                     @Override
                                     public void run() {
+                                        WeatherLocation autoLocation =
+                                                mDb.WeatherLocationDAO().getAutoLocation();
+                                        if (autoLocation != null){
+                                            mDb.WeatherLocationDAO().delete(autoLocation);
+                                        }
                                         WeatherLocation currentCheck =
                                                 mDb.WeatherLocationDAO().getCurrentLocation();
                                         WeatherLocation loc;
