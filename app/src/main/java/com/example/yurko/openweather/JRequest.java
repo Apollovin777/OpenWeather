@@ -38,7 +38,7 @@ public class JRequest {
         mForecast = forecast;
         mLatitude = latitude;
         mLongitude = longitude;
-        Log.i(LOG_TAG,"Constuctor");
+        Log.i(LOG_TAG,"ConstuctorCurrent");
         makeHttpRequest(buildByCoordURL());
     }
 

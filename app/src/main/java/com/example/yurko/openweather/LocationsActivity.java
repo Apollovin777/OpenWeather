@@ -9,6 +9,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -26,6 +27,7 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
     private Animation fab_open, fab_close, rotate_forward, rotate_backward;
     private ListView mListView;
     private AppDatabase mDb;
+    private Intent mIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +35,7 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.activity_locations);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
 
@@ -49,8 +52,6 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
         rotate_forward = AnimationUtils.loadAnimation(this, R.anim.rotate_forward);
         rotate_backward = AnimationUtils.loadAnimation(this, R.anim.rotate_backward);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         mListView = findViewById(R.id.locations_view);
         mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -63,13 +64,19 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
                                 AppExecutors.getInstance().diskIO().execute(new Runnable() {
                                     @Override
                                     public void run() {
-                                        mDb.WeatherLocationDAO().delete(weatherLocation);
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                loadLocations();
+                                        Log.i("weatherLocation",weatherLocation.cityId);
+                                        if (!weatherLocation.cityId.equals(WeatherLocation.AUTOLOCATION_ID)) {
+                                            if(weatherLocation.currentLocation==1){
+                                                makeCurrent(mDb.WeatherLocationDAO().getAutoLocation());
                                             }
-                                        });
+                                            mDb.WeatherLocationDAO().delete(weatherLocation);
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    loadLocations();
+                                                }
+                                            });
+                                        }
                                     }
                                 });
                             }
@@ -90,22 +97,30 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final WeatherLocation weatherLocation = (WeatherLocation) parent.getItemAtPosition(position);
-                weatherLocation.currentLocation = 1;
-                AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                makeCurrent(weatherLocation);
+            }
+        });
+    }
+
+    private void makeCurrent(final WeatherLocation weatherLocation){
+        weatherLocation.currentLocation = 1;
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                mDb.WeatherLocationDAO().updateCurrentLocation(weatherLocation.id);
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mDb.WeatherLocationDAO().updateCurrentLocation(weatherLocation.id);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                loadLocations();
-                            }
-                        });
+                        loadLocations();
                     }
                 });
             }
         });
+        mIntent = new Intent();
+        setResult(RESULT_OK,mIntent);
+        finish();
     }
+
 
     @Override
     public void onClick(View v) {
@@ -132,7 +147,9 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
         if (data == null) {
             return;
         }
-        loadLocations();
+        mIntent = new Intent();
+        setResult(RESULT_OK,mIntent);
+        finish();
     }
 
     public void animateFAB() {
@@ -144,8 +161,6 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
             mFabSearch.setClickable(false);
             isFabOpen = false;
             mFab.setBackgroundTintList(getResources().getColorStateList(R.color.colorAccent));
-            Log.d("Raj", "close");
-
         } else {
             mFab.startAnimation(rotate_forward);
             mFabPoint.startAnimation(fab_open);
@@ -155,7 +170,6 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
             isFabOpen = true;
             //mFab.setBackgroundTintList(getResources().getColorStateList(R.color.colorGrey));
             //mFab.setBackgroundColor(getResources().getColor(R.color.colorGrey));
-            Log.d("Raj", "open");
         }
     }
 
@@ -176,5 +190,15 @@ public class LocationsActivity extends AppCompatActivity implements View.OnClick
                 });
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                return true;
+        }
+        return true;
     }
 }

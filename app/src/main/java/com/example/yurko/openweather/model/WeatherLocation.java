@@ -1,4 +1,4 @@
-package com.example.yurko.openweather;
+package com.example.yurko.openweather.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;

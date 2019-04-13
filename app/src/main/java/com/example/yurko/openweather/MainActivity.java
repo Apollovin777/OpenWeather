@@ -1,4 +1,5 @@
 package com.example.yurko.openweather;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -40,6 +41,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,12 +51,14 @@ import java.util.Date;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static String LOG_TAG="firstactive";
 
     private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     private static final String[] REQUIRED_SDK_PERMISSIONS = new String[]{
             Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
     private AppDatabase mDb;
+    private RequestCurrentCond mRequestCurrentCond;
 
     String mCurrent;
     String mForecast;
@@ -95,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
         mCurrCityName = findViewById(R.id.currCityName);
         mCurrCountryName = findViewById(R.id.currCountryName);
 
+
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
@@ -130,47 +135,72 @@ public class MainActivity extends AppCompatActivity {
         mUpdatedStatus = findViewById(R.id.id_updateStatus);
         mCurrCondImage = findViewById(R.id.weatherImage);
 
-        Log.i("JRequest","onCreate");
-
         setAutoLocationPlace();
 
 // get location for coordinates -----------------------------------
+        mRequestCurrentCond = new RequestCurrentCond();
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(LOG_TAG,"run()");
+                WeatherLocation location = mDb.WeatherLocationDAO().getAutoLocation();
+                Log.i(LOG_TAG,location.cityName);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(LOG_TAG,"runOnUiThread");
+                        mRequestCurrentCond.setListener(new RequestCurrentCond.RequestCurrentCondListener() {
 
-
+                            @Override
+                            public void onExampleAsyncTaskFinished(String value) {
+                                Log.i(LOG_TAG,"onExampleAsyncTaskFinished");
+                                mCurrent = value;
+                                Log.i(LOG_TAG,mCurrent);
+                                updateCurrent();
+                            }
+                        });
+                    }
+                });
+                mRequestCurrentCond.execute(location);
+                Log.i(LOG_TAG,"execute in OnCreate");
+            }
+        });
 
 //-----------------------------------------------------------
 
-        new AsyncTask<Void,Void,Void>(){
-
-            JRequest mJRequest;
-
-            @Override
-            protected void onPreExecute() {
-                mUpdatedStatus.setText(R.string.downloading);
-            }
-
-            @Override
-            protected Void doInBackground(Void... voids) {
-                WeatherLocation location = mDb.WeatherLocationDAO().getCurrentLocation();
-                if (location != null) {
-                    mJRequest = new JRequest(false,location.latitude,location.longitude);
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                Log.i("JRequest",mJRequest.getResult());
-                mCurrent = mJRequest.getResult();
-                updateCurrent();
-
-            }
-        }.execute();
+//        new AsyncTask<Void,Void,Void>(){
+//
+//            JRequest mJRequest;
+//
+//            @Override
+//            protected void onPreExecute() {
+//                mUpdatedStatus.setText(R.string.downloading);
+//            }
+//
+//            @Override
+//            protected Void doInBackground(Void... voids) {
+//                WeatherLocation location = mDb.WeatherLocationDAO().getCurrentLocation();
+//                if (location != null) {
+//                    mJRequest = new JRequest(false,location.latitude,location.longitude);
+//                }
+//                return null;
+//            }
+//
+//            @Override
+//            protected void onPostExecute(Void aVoid) {
+//                //Log.i("JRequest",mJRequest.getResult());
+//                if(mJRequest != null) {
+//                    mCurrent = mJRequest.getResult();
+//                    updateCurrent();
+//                }
+//            }
+//        }.execute();
 
     }
 
-    private void updateCurrent(){
-        if (mCurrent != null){
+    private void updateCurrent() {
+        Log.i(LOG_TAG,"updateCurrent");
+        if (mCurrent != null) {
             JSONParseCurrent current = null;
             try {
                 JSONObject rootObject = new JSONObject(mCurrent);
@@ -189,13 +219,10 @@ public class MainActivity extends AppCompatActivity {
 
                 setCurrCondImage(current.getDescriptionID());
 
-                //String nextAlarm = Settings.System.getString(getContentResolver(),
-                 //       Settings.System.NEXT_ALARM_FORMATTED);
-
                 AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
                 AlarmManager.AlarmClockInfo clockInfo = alarmManager.getNextAlarmClock();
                 android.text.format.DateFormat df = new android.text.format.DateFormat();
-                if (clockInfo!=null) {
+                if (clockInfo != null) {
                     long nextAlarmTime = clockInfo.getTriggerTime();
                     Date nextAlarmDate = new Date(nextAlarmTime);
 
@@ -203,8 +230,7 @@ public class MainActivity extends AppCompatActivity {
                     String nextAlarm = df.format("EEE HH:mm", nextAlarmDate).toString();
 
                     mNextAlarmTime.setText(nextAlarm);
-                }
-                else {
+                } else {
                     ImageView alarmImage = findViewById(R.id.id_alarmtime_image);
                     alarmImage.setVisibility(View.GONE);
                 }
@@ -213,21 +239,20 @@ public class MainActivity extends AppCompatActivity {
                 String currCondTime = df.format("HH:mm", current.getDate()).toString();
                 String updated = getResources().getString(R.string.updated);
                 mUpdatedStatus.setText(updated + " " + updateTime + " / " + currCondTime);
-            }
-            catch (JSONException e){
-                Log.i("JRequest",e.getMessage());
+            } catch (JSONException e) {
+                Log.i("JRequest", e.getMessage());
             }
         }
     }
 
     private void setCurrCondImage(String descriptionID) {
 
-        if( descriptionID == null){
+        if (descriptionID == null) {
             mCurrCondImage.setImageResource(R.drawable.cond_na);
             return;
         }
-        int id = Integer.parseInt(descriptionID.substring(0,1));
-        switch (id){
+        int id = Integer.parseInt(descriptionID.substring(0, 1));
+        switch (id) {
             case 2:
                 mCurrCondImage.setImageResource(R.drawable.cond_day_thunderstorm);
                 break;
@@ -249,26 +274,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String getFormatSunRiseSet(JSONParseCurrent jObj){
+    private String getFormatSunRiseSet(JSONParseCurrent jObj) {
         try {
 
             SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 
             Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(jObj.getSunRiseTime()*1000);
+            calendar.setTimeInMillis(jObj.getSunRiseTime() * 1000);
 
             StringBuilder builder = new StringBuilder();
             builder.append(timeFormat.format(calendar.getTime()));
 
             builder.append(" - ");
 
-            calendar.setTimeInMillis(jObj.getSunSetTime()*1000);
+            calendar.setTimeInMillis(jObj.getSunSetTime() * 1000);
             builder.append(timeFormat.format(calendar.getTime()));
 
             return builder.toString();
-        }
-        catch (JSONException e){
-            Log.i("JRequest",e.getMessage());
+        } catch (JSONException e) {
+            Log.i("JRequest", e.getMessage());
             return null;
         }
     }
@@ -276,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu,menu);
+        inflater.inflate(R.menu.main_menu, menu);
         return true;
     }
 
@@ -287,18 +311,18 @@ public class MainActivity extends AppCompatActivity {
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.menu_location:
-                startActivity(new Intent(this,LocationsActivity.class));
+                startActivityForResult(new Intent(this, LocationsActivity.class), 1);
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    public void setAutoLocationPlace(){
+    public void setAutoLocationPlace() {
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
-                List<WeatherLocation> list = mDb.WeatherLocationDAO().getAutoLocation();
-                if(list.isEmpty()) {
+                WeatherLocation autoLocation = mDb.WeatherLocationDAO().getAutoLocation();
+                if (autoLocation == null) {
                     addAutoLocation();
                 }
             }
@@ -321,8 +345,8 @@ public class MainActivity extends AppCompatActivity {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
                             final WeatherLocation loc = new WeatherLocation(
-                                    "99999","Auto Location",null,
-                                    location.getLatitude(),location.getLongitude(),1,0
+                                    WeatherLocation.AUTOLOCATION_ID, "Auto Location", null,
+                                    location.getLatitude(), location.getLongitude(), 1, 1
                             );
                             AppExecutors.getInstance().diskIO().execute(new Runnable() {
                                 @Override
@@ -335,8 +359,55 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (data == null) {
+            return;
+        }
+
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                final WeatherLocation weatherLocation = mDb.WeatherLocationDAO().getCurrentLocation();
+                if (weatherLocation != null) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCollapsingToolbarLayout.setTitle(weatherLocation.cityName);
+                            mCurrCityName.setText(weatherLocation.cityName);
+                            mCurrCountryName.setText(weatherLocation.country);
+                        }
+                    });
+                }
+            }
+        });
+
+        mRequestCurrentCond = new RequestCurrentCond();
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                WeatherLocation location = mDb.WeatherLocationDAO().getCurrentLocation();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRequestCurrentCond.setListener(new RequestCurrentCond.RequestCurrentCondListener() {
+                            @Override
+                            public void onExampleAsyncTaskFinished(String value) {
+                                Log.i(LOG_TAG,"onExampleAsyncTaskFinished");
+                                Log.i(LOG_TAG,value);
+                                mCurrent = value;
+                                updateCurrent();
+                            }
+                        });
+                    }
+                });
+                mRequestCurrentCond.execute(location);
+            }
+        });
+    }
+
     protected void checkPermissions() {
-        final List<String> missingPermissions = new ArrayList<String>();
+        final List<String> missingPermissions = new ArrayList<>();
         // check all required dynamic permissions
         for (final String permission : REQUIRED_SDK_PERMISSIONS) {
             final int result = ContextCompat.checkSelfPermission(this, permission);
@@ -375,5 +446,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    static class RequestCurrentCond extends AsyncTask<WeatherLocation, String, String> {
+        private RequestCurrentCondListener listener;
+
+        @Override
+        protected String doInBackground(WeatherLocation... location) {
+            WeatherLocation currLocation = location[0];
+            if (location != null) {
+                JRequest jRequest = new JRequest(false, currLocation.latitude, currLocation.longitude);
+                return jRequest.getResult();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String value) {
+
+            if (listener != null) {
+                Log.i(LOG_TAG,"onPostExecute");
+                listener.onExampleAsyncTaskFinished(value);
+            }
+        }
+
+        public void setListener(RequestCurrentCondListener listener) {
+            this.listener = listener;
+        }
+
+        public interface RequestCurrentCondListener {
+            void onExampleAsyncTaskFinished(String value);
+        }
+    }
 }
 

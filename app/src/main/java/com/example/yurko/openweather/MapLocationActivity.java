@@ -83,28 +83,28 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
                             // Got last known location. In some rare situations this can be null.
                             if (location != null) {
                                 LatLng currLocation = new LatLng(location.getLatitude(), location.getLongitude());
-                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currLocation, 15.0f));
+                                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currLocation, 8.0f));
                                 mMarker = mMap.addMarker(new MarkerOptions().position(currLocation));
                                 //marker.setDraggable(true);
                             }
                         }
                     });
-
             mMap.setMyLocationEnabled(true);
             mMap.setOnMyLocationButtonClickListener(this);
-
-            mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-                @Override
-                public void onMapClick(LatLng point) {
-                    mMap.clear();
-                    mMarker = mMap.addMarker(new MarkerOptions().position(point));
-                }
-            });
-
-
         } else {
-            // Show rationale and request permission.
+            LatLng currLocation = new LatLng(50, 30);
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currLocation, 8.0f));
+            mMarker = mMap.addMarker(new MarkerOptions().position(currLocation));
         }
+
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng point) {
+                mMap.clear();
+                mMarker = mMap.addMarker(new MarkerOptions().position(point));
+            }
+        });
     }
 
     @Override
@@ -120,7 +120,7 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.map_menu,menu);
+        inflater.inflate(R.menu.map_menu, menu);
         return true;
     }
 
@@ -142,11 +142,11 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
         return super.onOptionsItemSelected(item);
     }
 
-    private void getLocation(LatLng latLng){
+    private void getLocation(LatLng latLng) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
 
         // Configure API key authorization: key
-        ApiKeyAuth keys = (ApiKeyAuth)defaultClient.getAuthentication("key");
+        ApiKeyAuth keys = (ApiKeyAuth) defaultClient.getAuthentication("key");
 
         keys.setApiKey(BuildConfig.locIQ_key);
         // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
@@ -186,8 +186,8 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
             finish();
 
         } catch (ApiException e) {
-            Log.e(LOG_TAG,"Exception when calling ReverseApi#reverse");
-            Log.e(LOG_TAG,  e.getResponseBody());
+            Log.e(LOG_TAG, "Exception when calling ReverseApi#reverse");
+            Log.e(LOG_TAG, e.getResponseBody());
         }
     }
 }

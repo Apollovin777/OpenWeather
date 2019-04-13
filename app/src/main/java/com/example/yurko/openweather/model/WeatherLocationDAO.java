@@ -1,4 +1,4 @@
-package com.example.yurko.openweather;
+package com.example.yurko.openweather.model;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
@@ -10,13 +10,13 @@ import java.util.List;
 @Dao
 public abstract class WeatherLocationDAO {
     @Insert
-    abstract long insert(WeatherLocation location);
+    public abstract long insert(WeatherLocation location);
 
     @Delete
-    abstract void delete(WeatherLocation person);
+    public abstract void delete(WeatherLocation location);
 
     @Query("SELECT * FROM weatherlocation WHERE recordType = 1")
-    abstract WeatherLocation getAutoLocation();
+    public abstract WeatherLocation getAutoLocation();
 
     @Query("SELECT * FROM weatherlocation WHERE currentLocation = 1")
     public abstract WeatherLocation getCurrentLocation();
@@ -35,6 +35,9 @@ public abstract class WeatherLocationDAO {
 
     @Query("UPDATE weatherlocation set currentLocation = 1 where id = :id")
     abstract void setCurrent(long id);
+
+    @Query("UPDATE weatherlocation set currentLocation = 1 where recordType = 1")
+    public abstract void setAutoAsCurrent();
 
     @Transaction
     void updateCurrentLocation(long id) {
