@@ -14,7 +14,7 @@ import java.net.URL;
 public class JRequest {
     private final String LOG_TAG = "JRequest";
 
-    private final String APP_ID = BuildConfig.OpenW_key;
+    private final String APP_ID = BuildConfig.OPENWEATHER_API_KEY;
 
     private final String urlByCityCurrent = "http://api.openweathermap.org/data/2.5/weather";
     private final String urlByCityForecast = "http://api.openweathermap.org/data/2.5/forecast";

@@ -1,7 +1,7 @@
 package com.example.yurko.openweather.model;
 
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.PrimaryKey;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 @Entity(tableName = "weatherlocation")
 public class WeatherLocation {

@@ -42,7 +42,7 @@ public class JSONParseForecast extends JSONParse{
         JSONArray array = mJsonObj.getJSONArray("list");
         for(int i = 0; i<array.length();i++){
             temp = array.getJSONObject(i).getJSONObject("main").getDouble("temp")-273;
-            arrayTemps[i]=String.valueOf(round(temp,0));
+            arrayTemps[i]=String.valueOf((int)round(temp,0));
         }
         return arrayTemps;
     }

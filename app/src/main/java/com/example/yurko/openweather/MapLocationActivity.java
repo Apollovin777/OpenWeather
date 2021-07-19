@@ -4,24 +4,23 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
-import android.widget.Toast;
+
+import LocationIq.ApiException;
 
 import com.example.yurko.openweather.LocationIq.ApiClient;
-import com.example.yurko.openweather.LocationIq.ApiException;
-import com.example.yurko.openweather.LocationIq.Configuration;
-import com.example.yurko.openweather.LocationIq.auth.*;
-import com.locationiq.client.api.ReverseApi;
 
+
+import com.example.yurko.openweather.LocationIq.ReverseApi;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -133,7 +132,11 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
                 AppExecutors.getInstance().diskIO().execute(new Runnable() {
                     @Override
                     public void run() {
-                        getLocation(latLng);
+                        if (latLng != null) {
+                            getLocation(latLng);
+                        } else {
+                            Log.i(LOG_TAG,"latLng failed");
+                        }
                     }
                 });
 
@@ -143,12 +146,12 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void getLocation(LatLng latLng) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        ApiClient defaultClient = com.example.yurko.openweather.LocationIq.Configuration.getDefaultApiClient();
 
         // Configure API key authorization: key
-        ApiKeyAuth keys = (ApiKeyAuth) defaultClient.getAuthentication("key");
+        LocationIq.auth.ApiKeyAuth keys = (LocationIq.auth.ApiKeyAuth) defaultClient.getAuthentication("key");
 
-        keys.setApiKey(BuildConfig.locIQ_key);
+        keys.setApiKey(BuildConfig.OPENWEATHER_LOCATIONIQ_TOKEN);
         // Uncomment the following line to set a prefix for the API key, e.g. "Token" (defaults to null)
         //keys.setApiKeyPrefix("ffffffffff");
 
@@ -162,8 +165,10 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
         Integer namedetails = 0; // Integer | Include a list of alternative names in the results. These may include language variants, references, operator and brand.
         Integer extratags = 0; // Integer | Include additional information in the result if available, e.g. wikipedia link, opening hours.
         Integer statecode = 0; // Integer | Adds state or province code when available to the statecode key inside the address element. Currently supported for addresses in the USA, Canada and Australia. Defaults to 0
+        Integer showdistance = 0;
+        Integer postaladdress = 0;
         try {
-            com.locationiq.client.model.Location result = apiInstance.reverse(lat, lon, format, normalizecity, addressdetails, acceptLanguage, namedetails, extratags, statecode);
+            com.locationiq.client.model.Location result = apiInstance.reverse (lat, lon, format, normalizecity, addressdetails, acceptLanguage, namedetails, extratags, statecode, showdistance, postaladdress);
             Address address = result.getAddress();
 
             mDb = AppDatabase.getInstance(getApplicationContext());
@@ -187,7 +192,7 @@ public class MapLocationActivity extends AppCompatActivity implements OnMapReady
 
         } catch (ApiException e) {
             Log.e(LOG_TAG, "Exception when calling ReverseApi#reverse");
-            Log.e(LOG_TAG, e.getResponseBody());
+            //Log.e(LOG_TAG, e.getResponseBody());
         }
     }
 }

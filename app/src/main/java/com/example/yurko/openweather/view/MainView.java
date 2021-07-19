@@ -1,12 +1,21 @@
 package com.example.yurko.openweather.view;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 public interface MainView {
-    void setCurrentCondiiton(String data);
+    //void setCurrentCondition(String data);
+    void setTemp(String temp);
+    void setDescription(String description);
+    void setWindSpeed(String speed);
+    void setCloud(String cloud);
+    void setPressure(String pressure);
+    void setHumidity(String humidity);
+    void setSunRiseSetTime(String riseSetTime);
+    void setCCImage(Integer id);
+    void setUpdateBarText(String text);
     void showToast(String info);
     void setStatusBarCaption(String city, String country);
-    void setLoadingBar(String data);
     void setForecast(String data);
+    void setNexAlarmTime(String alarmTime);
     AppCompatActivity getViewActivity();
 }

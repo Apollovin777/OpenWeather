@@ -1,0 +1,24 @@
+<androidx.preference.PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory app:title="@string/sync_header"        >
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_auto"
+            android:summaryOff="Click to enable auto sync"
+            android:summaryOn="Click to disable auto sync"
+            />
+
+        <ListPreference
+            android:dialogTitle="Frequency"
+            android:entries="@array/sync_list_entries"
+            android:entryValues="@array/sync_list_values"
+            android:key="list"
+            android:summary="Click to show a list to choose from"
+            android:title="Frequency"
+            android:dependency="sync"
+            />
+    </PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

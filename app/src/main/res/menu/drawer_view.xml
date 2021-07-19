@@ -9,7 +9,14 @@
             android:id="@+id/nav_update"
             android:icon="@drawable/ic_update"
             android:title="Update" />
-
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="Settings" />
+        <item
+            android:id="@+id/check_service"
+            android:icon="@drawable/ic_check"
+            android:title="Check Service" />
     </group>
 </menu>
 
